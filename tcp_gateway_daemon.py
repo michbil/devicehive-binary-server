@@ -8,7 +8,6 @@ import argparse
 from twisted.python import log
 from twisted.internet import reactor
 from twisted.internet.endpoints import TCP4ServerEndpoint
-from daemonize import Daemonize
 import logging
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
@@ -65,6 +64,7 @@ if __name__ == '__main__':
     pid = '/tmp/tcpgw.pid'
     print "main started"
     if daemon:
+        from daemonize import Daemonize
         daemon = Daemonize(app="tcp_gateway", pid=pid, action=start)
         daemon.start() 
     else:

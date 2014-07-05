@@ -200,9 +200,10 @@ class RequestProtocol(HTTP11ClientProtocol):
             self.get_response_text(response, on_data)
         elif response.code == 204 :
             self.deferred.callback(None)
-        else :
+        else:
             def on_err(err):
-                self.deferred.errback(err)
+                LOG_ERR('Server returned error: '+err)
+                """self.deferred.errback()"""
             self.get_response_text(response, on_err)
 
     def on_failure(self, reason):
