@@ -264,13 +264,13 @@ class BinaryPacketBuffer(object):
         """
         Returns first received packet and then removes it from the buffer
         """
-        if not self.has_packet() :
+        if not self.has_packet():
             return None
         try:
             pkt = Packet.from_binary(self._data)
         except PacketError:
             print "There was packet error, but this is ok, waiting for normal packet"
-            return None
+            pkt = None
         self._data = self._data[PACKET_OFFSET_DATA + 1 + ((( ord(self._data[PACKET_OFFSET_LEN_MSB]) << 8) & 0xff00) | ( ord(self._data[PACKET_OFFSET_LEN_LSB]) & 0xff)):]
         self._skip_to_next_packet()
         return pkt
@@ -1056,7 +1056,9 @@ class BinaryProtocol(Protocol):
         """
         self.factory.packet_buffer.append(data)
         while self.factory.packet_buffer.has_packet() :
-            self.factory.packet_received(self.factory.packet_buffer.pop_packet())
+            packet = self.factory.packet_buffer.pop_packet()
+            if packet:
+                self.factory.packet_received(packet)
     
     def connectionLost(self, reason):
         return Protocol.connectionLost(self, reason)
