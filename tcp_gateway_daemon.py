@@ -40,6 +40,7 @@ class Gateway(devicehive.gateway.BaseGateway):
 
 def start():
     log.startLogging(sys.stdout)
+    devicehive.poll.RequestFactory.noisy=0
     gateway = Gateway('http://kidgo.com.ua:8080/DeviceHiveJava/rest', devicehive.auto.PollFactory)
     # create endpoint and factory to be used to organize communication channel to device
     endpoint = TCP4ServerEndpoint(reactor, 9000);    
