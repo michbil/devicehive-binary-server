@@ -14,6 +14,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 import devicehive
 import devicehive.auto
 import devicehive.poll
+from  devicehive.device.ws import WebSocketFactory
 import devicehive.gateway
 import devicehive.gateway.binary
 from serial import PARITY_NONE
@@ -37,20 +38,20 @@ class Gateway(devicehive.gateway.BaseGateway):
     def run(self, transport_endpoint, device_factory):
         super(Gateway, self).run(transport_endpoint, device_factory)
 
+    def on_connected(self):
+        super(Gateway, self).on_connected()
+        #self.factory.authenticate('device', 'device')
+
+
 
 def start():
+
     log.startLogging(sys.stdout)
     devicehive.poll.RequestFactory.noisy=0
     gateway = Gateway('http://kidgo.com.ua:8080/DeviceHiveJava/rest', devicehive.auto.AutoFactory)
-    #gateway = Gateway('http://nn6029.pg.devicehive.com/api', devicehive.auto.AutoFactory)
+    #gateway = Gateway('http://nn6029.pg.devicehive.com/api', devicehive.auto.PollFactory)
     # create endpoint and factory to be used to organize communication channel to device
-    endpoint = TCP4ServerEndpoint(reactor, 9000);    
-#    endpoint = devicehive.gateway.binary.SerialPortEndpoint(reactor, \http://kidgo.com.ua:8080/DeviceHiveJava/rest/config/set?name=websocket.url&value=ws://kidgo.com.ua:8080/DeviceHiveJava/websocket/device
-#                                                            sport, \
-#                                                            baudrate = brate, \
-#                                                            bytesize = EIGHTBITS, \
-#                                                            parity = PARITY_NONE, \
-#                                                            stopbits = STOPBITS_ONE)
+    endpoint = TCP4ServerEndpoint(reactor, 9000)
     bin_factory = devicehive.gateway.binary.BinaryFactory(gateway)
     # run gateway application
     gateway.run(endpoint, bin_factory)

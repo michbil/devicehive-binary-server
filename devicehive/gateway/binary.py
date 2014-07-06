@@ -1080,6 +1080,7 @@ class BinaryProtocol(Protocol):
         Called when connection is made. Right after channel has been established gateway need to 
         send registration request intent to device(s).
         """
+        print "New protocol connection made"
         pkt = RegistrationRequestPacket()
         self.transport.write(pkt.to_binary())
 
