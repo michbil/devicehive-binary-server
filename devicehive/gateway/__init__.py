@@ -123,6 +123,7 @@ class BaseGateway(object):
         if device_id in self.devices :
             info = self.devices[device_id]
             self.device_factory.do_command(info, command, finish_deferred)
+            #todo fix command reception
     
     def run(self, transport_endpoint, device_factory):
         self.device_factory = device_factory
