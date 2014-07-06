@@ -41,10 +41,11 @@ class Gateway(devicehive.gateway.BaseGateway):
 def start():
     log.startLogging(sys.stdout)
     devicehive.poll.RequestFactory.noisy=0
-    gateway = Gateway('http://kidgo.com.ua:8080/DeviceHiveJava/rest', devicehive.auto.PollFactory)
+    gateway = Gateway('http://kidgo.com.ua:8080/DeviceHiveJava/rest', devicehive.auto.AutoFactory)
+    #gateway = Gateway('http://nn6029.pg.devicehive.com/api', devicehive.auto.AutoFactory)
     # create endpoint and factory to be used to organize communication channel to device
     endpoint = TCP4ServerEndpoint(reactor, 9000);    
-#    endpoint = devicehive.gateway.binary.SerialPortEndpoint(reactor, \
+#    endpoint = devicehive.gateway.binary.SerialPortEndpoint(reactor, \http://kidgo.com.ua:8080/DeviceHiveJava/rest/config/set?name=websocket.url&value=ws://kidgo.com.ua:8080/DeviceHiveJava/websocket/device
 #                                                            sport, \
 #                                                            baudrate = brate, \
 #                                                            bytesize = EIGHTBITS, \
