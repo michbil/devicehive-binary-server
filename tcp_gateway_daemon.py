@@ -35,6 +35,8 @@ class TcpBinaryProtocol(Protocol):
         self.notification_descriptors = {}
         self.pending_results = {}
         self.gateway = None
+        self.name = None
+        self.id = None
 
     def dataReceived(self, data):
         """
@@ -98,6 +100,10 @@ class TcpBinaryProtocol(Protocol):
         Adds command to binary-serializable-class mapping and then
         calls deferred object.
         """
+
+        self.id = str(reg.device_id)
+        self.name = str(reg.device_name)
+
         info = CDeviceInfo(id = str(reg.device_id), \
                            key = reg.device_key, \
                            name = reg.device_name, \
@@ -121,7 +127,7 @@ class TcpBinaryProtocol(Protocol):
         """
         Run all callbacks attached to notification_received deferred
         """
-        log.msg('BinaryFactory.handle_notification_command_result')
+        log.msg('BinaryProtocol.handle_notification_command_result')
         if notification.command_id in self.pending_results :
             deferred = self.pending_results.pop(notification.command_id)
             deferred.callback(CommandResult(notification.status, notification.result))
@@ -164,13 +170,23 @@ class TcpBinaryFactory(ServerFactory):
         #self.packet_buffer = BinaryPacketBuffer()
         #self.protocol = None
         self.gateway = gateway
+        self.protocols = []
 
     def buildProtocol(self, addr):
         log.msg('BinaryFactory.buildProtocol')
         protocol = TcpBinaryProtocol(self)
         protocol.gateway = self.gateway
 
+        self.protocols.append(protocol)
+
         return protocol
+
+    def do_command(self, device_id, command, finish_deferred):
+        for p in self.protocols:
+            if p.id == device_id:
+                p.do_command(device_id,command,finish_deferred)
+                return
+
 
 
 class Gateway(devicehive.gateway.BaseGateway):
