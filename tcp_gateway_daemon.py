@@ -38,6 +38,9 @@ class TcpBinaryProtocol(Protocol):
         self.name = None
         self.id = None
 
+        self.registration_received = 0
+        self.bad_notification_count = 0
+
     def dataReceived(self, data):
         """
         Method should throws events to the factory when complete packet is received
@@ -49,6 +52,7 @@ class TcpBinaryProtocol(Protocol):
                 self.packet_received(packet)
 
     def connectionLost(self, reason):
+        print "Connection closed "
         return Protocol.connectionLost(self, reason)
 
     def makeConnection(self, transport):
@@ -85,14 +89,25 @@ class TcpBinaryProtocol(Protocol):
         log.msg('Data packet {0} has been received from device channel'.format(packet))
         if packet.intent == SYS_INTENT_REGISTER :
             regreq = BinaryFormatter.deserialize(packet.data, RegistrationPayload)
+            self.registration_received = 1;
             self.handle_registration_received(regreq)
         elif packet.intent == SYS_INTENT_REGISTER2:
             regreq = BinaryFormatter.deserialize_register2(packet.data[2:])
+            self.registration_received=1;
             self.handle_registration_received(regreq)
         elif packet.intent == SYS_INTENT_NOTIFY_COMMAND_RESULT :
             notifreq = BinaryFormatter.deserialize(packet.data, NotificationCommandResultPayload)
             self.handle_notification_command_result(notifreq)
         else:
+            if not self.registration_received:
+                self.bad_notification_count = self.bad_notification_count + 1
+                if self.bad_notification_count == 1:
+                    pkt = RegistrationRequestPacket()
+                    self.transport.write(pkt.to_binary())
+                    print "Retry registration"
+                if self.bad_notification_count > 10:
+                    print "registration not received yet"
+                    self.transport.loseConnection()
             self.handle_pass_notification(packet)
 
     def handle_registration_received(self, reg):
@@ -158,8 +173,8 @@ class TcpBinaryProtocol(Protocol):
             log.msg('Command parameters {0}.'.format(command.parameters, type(command.parameters)))
             command_obj.update(command.parameters)
             self.pending_results[command_id] = finish_deferred
-            self.protocol.send_command(command_desc.intent, struct.pack('<I', command_id) + BinaryFormatter.serialize_object(command_obj))
-        else :
+            self.send_command(command_desc.intent, struct.pack('<I', command_id) + BinaryFormatter.serialize_object(command_obj))
+        else:
             msg = 'Command {0} is not registered for device "{1}".'.format(command, device_id)
             log.err(msg)
             finish_deferred.errback(msg)
@@ -236,7 +251,7 @@ if __name__ == '__main__':
     if daemon:
         from daemonize import Daemonize
         daemon = Daemonize(app="tcp_gateway", pid=pid, action=start)
-        daemon.start() 
+        daemon.start()
     else:
         start()
 #    log.startLogging(open('/tmp/tcpgw.log', 'w'))

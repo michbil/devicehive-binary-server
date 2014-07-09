@@ -70,7 +70,7 @@ class generic_test_device(object):
         self.DEVICE_ID = id
         self.registration = "{" +\
         "id:\"" + self.DEVICE_ID + "\"," +\
-        "key:\"" + self.DEVICE_KEY + "\","  +\
+        "key:\"" + self.DEVICE_KEY + "11\","  +\
         "name:\"" + self.DEVICE_NAME +"\","+\
         "deviceClass:{"+\
         "name:\"" +self.DEVICE_CLASS_NAME+"\","+\
@@ -120,10 +120,11 @@ class Greeter(Protocol):
     def sendMessage(self, pkt):
         print "sending message "+pkt
         self.transport.write(pkt)
-        reactor.callLater(10, self.sendMessage, self.device.sendEquipmentLong(self.device.LEVEL_EQP_CODE, self.level))
+        reactor.callLater(3, self.sendMessage, self.device.sendEquipmentLong(self.device.LEVEL_EQP_CODE, self.level))
 
     def connectionMade(self):
-        pdataok = self.device.sendRegistration()
+        #pdataok = self.device.sendRegistration()
+        pdataok=""
 
         #pdatabad = pdataok[:len(pdataok)-1]+'\xd4'
         #p.sendMessage(pdatabad)
