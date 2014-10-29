@@ -63,6 +63,7 @@ class BaseGateway(object):
     factory = None
     connected = False
     devices = {}
+    device_objs = {}
     
     class _ProtoHandler(object):
         implements(IProtoHandler)
@@ -108,9 +109,10 @@ class BaseGateway(object):
         for key in self.devices :
             self.connect_device(self.devices[key])
     
-    def registration_received(self, info):
+    def registration_received(self, info, obj):
         log.msg('Device {0} has sent registration information.'.format(info))
         self.devices[info.id] = info
+        self.device_objs[info.id] = obj
         if self.connected :
             self.connect_device(info)
     
@@ -120,9 +122,9 @@ class BaseGateway(object):
             self.factory.notify(notification.name, notification.parameters, info.id, info.key)
     
     def do_command(self, device_id, command, finish_deferred):
-        if device_id in self.devices :
-            info = self.devices[device_id]
-            self.device_factory.do_command(info, command, finish_deferred)
+        if device_id in self.device_objs :
+            dev = self.device_objs[device_id]
+            dev.do_command(device_id, command, finish_deferred)
 
     
     def run(self, transport_endpoint, device_factory):
