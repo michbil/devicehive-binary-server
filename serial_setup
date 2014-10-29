@@ -300,6 +300,9 @@ class DummyGateway:
         """
         print "notification received",
 
+        if notification.name=="EEB":
+            notification.parameters['value'] = notification.parameters['value'].tolist()
+
         if notification.name == 'equipment':
             print notification.parameters['equipment'],
             print notification.parameters['value']
@@ -307,7 +310,7 @@ class DummyGateway:
             if notification.name=="EEB":
                 print notification
                 print "eeprom block received "+str(notification.parameters['adr'])
-                self.eedata.append(notification.parameters['value'].tolist())
+                self.eedata.append(notification.parameters['value'])
                 if self.read_finished:
                     self.eedata.parse_contents()
             else:
