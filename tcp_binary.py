@@ -7,6 +7,7 @@ import devicehive.gateway
 import devicehive.gateway.binary
 import binascii
 
+from devicehive import BaseCommand
 
 from devicehive.gateway.binary import  *
 
@@ -217,12 +218,13 @@ class TcpBinaryFactory(ServerFactory):
                 p.do_command(device_id,command,finish_deferred)
                 return
 
-
+import time, threading
 
 
 class Gateway(devicehive.gateway.BaseGateway):
     def __init__(self, url, factory_cls) :
         super(Gateway, self).__init__(url, factory_cls)
+        self.timer()
 
     def registration_received(self, device_info,obj):
         super(Gateway, self).registration_received(device_info,obj)
@@ -242,3 +244,28 @@ class Gateway(devicehive.gateway.BaseGateway):
     def on_connected(self):
         super(Gateway, self).on_connected()
         #self.factory.authenticate('device', 'device')
+
+    def send_ping_cmd(self,id):
+        command = BaseCommand()
+        command.command = "PN"
+        command.parameters= {"UPD":1}
+
+        self.do_command(id,command,self.CommandCallback(self))
+
+    class CommandCallback():
+        def __init__(self,base):
+            self.base = base
+        def errback(self,reason):
+            print "Error during ping command"
+            print reason
+        def callback(self,status):
+            print "Ping result",status.status,status.result
+
+
+    def timer(self):
+        threading.Timer(10, self.timer).start()
+        print ("Refresh tick")
+        print self.devices
+
+        for devkey in self.devices:
+            self.send_ping_cmd(devkey)

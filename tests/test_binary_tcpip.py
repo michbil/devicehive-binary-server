@@ -81,6 +81,7 @@ class generic_test_device(object):
         "{intent:261,name:\"" +self.CMD_WRITEEPROM+ "\",params:{adr:u16,value:u8}},"+\
         "{intent:262,name:\"" +self.CMD_RESET+ "\",params:{}},"+\
         "{intent:263,name:\"" +self.CMD_SERVICEMODE+ "\",params:{enter:u8,pass:str}},"+\
+        "{intent:264,name:\"" + "PN" + "\",params:{upd:u8}},"+\
         "],"+\
         "notifications:["+\
         "{intent:256,name:\"equipment\",params:{equipment:str,value:u32}},"+\
@@ -154,7 +155,7 @@ class Greeter(Protocol):
         print "sending message " + pkt
         self.transport.write(pkt)
         pkt = self.model.send_vars(self.device)
-        reactor.callLater(3, self.sendMessage, pkt)
+        #reactor.callLater(3, self.sendMessage, pkt)
 
     def connectionMade(self):
         print "Sending registartion"
@@ -193,10 +194,10 @@ log.startLogging(sys.stdout)
 
 gf = GreeterFactory()
 
-point = TCP4ClientEndpoint(reactor, "kidgo.com.ua", 9000)
-d = point.connect(gf)
-
-#point = TCP4ClientEndpoint(reactor, "localhost", 9000)
+#point = TCP4ClientEndpoint(reactor, "kidgo.com.ua", 9000)
 #d = point.connect(gf)
+
+point = TCP4ClientEndpoint(reactor, "localhost", 9000)
+d = point.connect(gf)
 
 reactor.run()
