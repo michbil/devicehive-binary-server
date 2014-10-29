@@ -91,7 +91,12 @@ class WebSocketFactory(ClientFactory):
         else :
             raise TypeError('handler should implements IProtoHandler interface')
         self.devices = {}
-    
+
+    def stopFactory(self):
+        print "WS FACTORY STOPPING"
+        self.handler.connect_ws() #dirty hack
+
+
     def buildProtocol(self, addr):
         self.proto = WebSocketDeviceHiveProtocol(self, 'device')
         if not IWebSocketMessanger.implementedBy(self.proto.__class__) :

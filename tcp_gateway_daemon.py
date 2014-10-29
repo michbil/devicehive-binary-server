@@ -21,7 +21,12 @@ import devicehive.gateway.binary
 
 import sys
 from daemon import Daemon
-import procname
+
+
+try:
+    import procname
+except ImportError:
+    pass
 
 from devicehive.gateway.binary import  *
 

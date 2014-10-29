@@ -219,6 +219,7 @@ class TcpBinaryFactory(ServerFactory):
 
 
 
+
 class Gateway(devicehive.gateway.BaseGateway):
     def __init__(self, url, factory_cls) :
         super(Gateway, self).__init__(url, factory_cls)
