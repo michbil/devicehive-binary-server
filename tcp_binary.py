@@ -11,6 +11,8 @@ from devicehive import BaseCommand
 
 from devicehive.gateway.binary import  *
 
+REFRESH_TIME=60*5
+
 class BasicBinaryProtocol(Protocol):
     """
     Binary protocol implementation.
@@ -263,7 +265,7 @@ class Gateway(devicehive.gateway.BaseGateway):
 
 
     def timer(self):
-        threading.Timer(10, self.timer).start()
+        threading.Timer(REFRESH_TIME, self.timer).start()
         print ("Refresh tick")
         print self.devices
 
