@@ -270,6 +270,8 @@ class BinaryPacketBuffer(object):
             pkt = Packet.from_binary(self._data)
         except PacketError:
             print "There was packet error, but this is ok, waiting for normal packet"
+            print self._data
+            print map(hex,map(ord,self._data))
             pkt = None
         self._data = self._data[PACKET_OFFSET_DATA + 1 + ((( ord(self._data[PACKET_OFFSET_LEN_MSB]) << 8) & 0xff00) | ( ord(self._data[PACKET_OFFSET_LEN_LSB]) & 0xff)):]
         self._skip_to_next_packet()

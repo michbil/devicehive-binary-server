@@ -21,7 +21,7 @@ import devicehive.gateway.binary
 
 import sys
 from daemon import Daemon
-import procname
+#import procname
 
 from devicehive.gateway.binary import  *
 
@@ -47,6 +47,8 @@ class TcpBinaryProtocol(Protocol):
         """
         Method should throws events to the factory when complete packet is received
         """
+        #print " ".join("{:02x}".format(ord(c)) for c in data),
+        #print data
         self.packet_buffer.append(data)
         while self.packet_buffer.has_packet() :
             packet = self.packet_buffer.pop_packet()

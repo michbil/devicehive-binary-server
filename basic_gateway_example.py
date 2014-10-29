@@ -41,8 +41,9 @@ class Gateway(devicehive.gateway.BaseGateway):
 def main(sport, brate):
 
     devicehive.poll.RequestFactory.noisy=0
-
+    devicehive.auto.PollFactory.noisy=0
     log.startLogging(sys.stdout)
+
     gateway = Gateway('http://kidgo.com.ua:8080/DeviceHiveJava/rest', devicehive.auto.PollFactory)
     # create endpoint and factory to be used to organize communication channel to device
     endpoint = devicehive.gateway.binary.SerialPortEndpoint(reactor, \

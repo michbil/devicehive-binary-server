@@ -13,7 +13,7 @@ from devicehive.gateway.binary import *
 
 class generic_test_device(object):
 
-    DEVICE_KEY          =    "TESTKEY"
+    DEVICE_KEY          =    "WATER_F1"
     DEVICE_NAME          =   "TESTDEVICE"
     DEVICE_CLASS_NAME    =   "vending_water"
     DEVICE_CLASS_VERSION  =  "1.0"
@@ -24,39 +24,27 @@ class generic_test_device(object):
     LED_CMD_COUNT    =       1
 
 
-    DEVICE_ID       =        "2201be97-4677-4a57-aab1-895639af8bd5"
+    DEVICE_ID       =        "2231be97-4677-4a57-aab1-895639af8bd5"
 
-    NP_EQUIPMENT=            "equipment"
-    NP_STATE     =           "state"
-    NOTIFY_EQUIPMENT    =    "equipment"
-    LED_CMD_NAME     =       "UpdateLedState"
+    EQ_LEVEL    =         "LVL";
+    EQ_VOLUME   =        "VLM";
+    EQ_TEMP     =         "TMP";
+    EQ_CNT      =        "CNT";
+    EQ_MONEY    =         "MNY";
+    EQ_LITER_INCASS=      "INL";
+    EQ_ERRORS       =     "ERR";
+    EQ_FLAGS       =      "FLG";
+    EQ_ADC_VOLTS   =      "ADC";
+    EQ_FROM_FULL   =      "FFU";
 
-    LEVEL_EQP_NAME    =        "LEVEL"
-    LEVEL_EQP_CODE   =         "LEVEL"
-    LEVEL_EQP_TYPE   =         "TANK LEVEL"
-    VOLUME_EQP_NAME  =          "VOLUME_S"
-    VOLUME_EQP_CODE  =          "VOLUME_S"
-    VOLUME_EQP_TYPE  =          "TANK VOLUME"
+    NTF_EEBLOCK = "EEB";
+    NTF_LOGLINE = "LL";
 
-    TEMP_EQP_NAME   =         "TEMP"
-    TEMP_EQP_CODE  =          "TEMP"
-    TEMP_EQP_TYPE  =          "Temperatuer sensor"
-
-    CNT_EQP_NAME    =        "COUNTER"
-    CNT_EQP_CODE  =          "COUNTER"
-    CNT_EQP_TYPE   =         "OVERALL COUNTER"
-
-    MONEY_EQP_NAME   =         "MONEY_IN"
-    MONEY_EQP_CODE   =         "MONEY_IN"
-    MONEY_EQP_TYPE   =         "MONEY AFTER INCASS"
-
-    LITER_INCASS_EQP_NAME =    "LITER_INCASS"
-    LITER_INCASS_EQP_CODE =    "LITER_INCASS"
-    LITER_INCASS_EQP_TYPE  =   "LITERS AFTER INCASS"
-
-    ERRORS_EQP_NAME    =        "ERRORS"
-    ERRORS_EQP_CODE     =       "ERRORS"
-    ERRORS_EQP_TYPE      =      "ERRORS"
+    CMD_CLEARERRORS = "CLE";
+    CMD_READEEPROM = "REE";
+    CMD_WRITEEPROM = "WEE";
+    CMD_RESET = "RST";
+    CMD_SERVICEMODE = "SM";
 
     MIN_CUSTOM_INTENT=256
     D2G_EQUIPMENT=(MIN_CUSTOM_INTENT)
@@ -76,21 +64,28 @@ class generic_test_device(object):
         "name:\"" +self.DEVICE_CLASS_NAME+"\","+\
         "version:\""+ self.DEVICE_CLASS_VERSION+ "\"},"+\
         "equipment:["+\
-        "{code:\""+ self.LEVEL_EQP_CODE +"\",name:\""+ self.LEVEL_EQP_NAME+ "\",type:\"" +self.LEVEL_EQP_TYPE+ "\"},"+\
-        "{code:\""+ self.VOLUME_EQP_CODE+ "\",name:\"" +self.VOLUME_EQP_NAME+ "\",type:\""+ self.VOLUME_EQP_TYPE+ "\"},"+\
-        "{code:\""+ self.CNT_EQP_CODE +"\",name:\"" +self.CNT_EQP_NAME+ "\",type:\"" +self.CNT_EQP_TYPE+ "\"},"+\
-        "{code:\""+ self.TEMP_EQP_CODE+ "\",name:\"" +self.TEMP_EQP_NAME+ "\",type:\""+ self.TEMP_EQP_TYPE+ "\"},"+\
-        "{code:\""+ self.ERRORS_EQP_CODE +"\",name:\""+ self.ERRORS_EQP_NAME+ "\",type:\"" +self.ERRORS_EQP_TYPE +"\"},"+\
-        "{code:\""+ self.MONEY_EQP_CODE +"\",name:\"" +self.MONEY_EQP_NAME+ "\",type:\""+ self.MONEY_EQP_TYPE+ "\"},"+\
-        "{code:\""+ self.LITER_INCASS_EQP_CODE+ "\",name:\""+ self.LITER_INCASS_EQP_NAME+ "\",type:\"" +self.LITER_INCASS_EQP_TYPE+ "\"}"+\
+        "{code:\"" + self.EQ_LEVEL + "\",name:\"" + self.EQ_LEVEL + "\",type:\"" + self.EQ_LEVEL + "\"},"+\
+        "{code:\""+self.EQ_VOLUME+ "\",name:\"" +self.EQ_VOLUME+ "\",type:\"" +self.EQ_VOLUME+ "\"},"+\
+        "{code:\"" +self.EQ_CNT+ "\",name:\"" +self.EQ_CNT+ "\",type:\"" +self.EQ_CNT+ "\"},"+\
+        "{code:\"" +self.EQ_TEMP+ "\",name:\"" +self.EQ_TEMP+ "\",type:\"" +self.EQ_TEMP+ "\"},"+\
+        "{code:\"" +self.EQ_ERRORS+ "\",name:\"" +self.EQ_ERRORS+ "\",type:\"" +self.EQ_ERRORS+ "\"},"+\
+        "{code:\"" +self.EQ_MONEY+ "\",name:\"" +self.EQ_MONEY+ "\",type:\"" +self.EQ_MONEY+ "\"},"+\
+        "{code:\"" +self.EQ_FLAGS+ "\",name:\"" +self.EQ_FLAGS+ "\",type:\""+self.EQ_FLAGS+"\"},"+\
+        "{code:\"" +self.EQ_LITER_INCASS+ "\",name:\""+self.EQ_LITER_INCASS+ "\",type:\""+ self.EQ_LITER_INCASS+ "\"},"+\
+        "{code:\"" +self.EQ_ADC_VOLTS+ "\",name:\""+self.EQ_ADC_VOLTS+"\",type:\"VOLTAGE PRESSURE\"},"+\
+        "{code:\"" +self.EQ_FROM_FULL+ "\",name:\""+self.EQ_FROM_FULL+"\",type:\"LITERS SINCE FULL\"}"+\
         "],"+\
         "commands:["+\
-        "{intent:257,name:\"ClearErrors\",params:{}},"+\
-        "{intent:258,name:\"ReadEeprom\",params:{adr:u16}}"+\
+        "{intent:257,name:\"" +self.CMD_CLEARERRORS+ "\",params:{}},"+\
+        "{intent:258,name:\"" +self.CMD_READEEPROM+ "\",params:{adr:u16}},"+\
+        "{intent:261,name:\"" +self.CMD_WRITEEPROM+ "\",params:{adr:u16,value:u8}},"+\
+        "{intent:262,name:\"" +self.CMD_RESET+ "\",params:{}},"+\
+        "{intent:263,name:\"" +self.CMD_SERVICEMODE+ "\",params:{enter:u8,pass:str}},"+\
         "],"+\
         "notifications:["+\
         "{intent:256,name:\"equipment\",params:{equipment:str,value:u32}},"+\
-        "{intent:259,name:\"eeblock\",params:{adr:u16,values:[u8]}}"+\
+        "{intent:259,name:\"" +self.NTF_EEBLOCK+ "\",params:{adr:u16,value:[u8]}},"+\
+        "{intent:260,name:\"" +self.NTF_LOGLINE+ "\",params:{line:str}}"+\
         "]"+\
         "}"
 
@@ -105,6 +100,7 @@ class generic_test_device(object):
         return self.sendStrlen(str)+str
 
     def sendRegistration(self):
+        print self.registration
         return Packet(PACKET_SIGNATURE, 0, 0, 3, self.sendStr(self.registration)).to_binary()
 
     def sendEquipmentLong(self,eq,value):
@@ -112,19 +108,58 @@ class generic_test_device(object):
 
 proto = None
 
+class DevModel():
+
+    def __init__(self):
+        self.volume = 10
+        self.level = 12
+        self.temp = 27.1
+        self.adc = 0.6
+        self.counter = 334
+        self.fromfull = 42
+        self.flags = 0
+        self.incass_liters = 45
+        self.money_incass = 33
+        self.errors = 0
+
+
+    def send_vars(self, device):
+
+        pkt = device.sendEquipmentLong(device.EQ_LEVEL, self.level)
+        pkt = pkt + device.sendEquipmentLong(device.EQ_VOLUME, self.volume )
+        pkt = pkt + device.sendEquipmentLong(device.EQ_TEMP, int(self.temp*10))
+        pkt = pkt + device.sendEquipmentLong(device.EQ_CNT,self.counter)
+        pkt = pkt + device.sendEquipmentLong(device.EQ_MONEY, self.money_incass)
+        pkt = pkt + device.sendEquipmentLong(device.EQ_LITER_INCASS, self.incass_liters)
+        pkt = pkt + device.sendEquipmentLong(device.EQ_ERRORS,self.errors)
+        pkt = pkt + device.sendEquipmentLong(device.EQ_FLAGS,self.flags)
+        pkt = pkt + device.sendEquipmentLong(device.EQ_ADC_VOLTS, int(self.adc*100))
+        pkt = pkt + device.sendEquipmentLong(device.EQ_FROM_FULL, self.fromfull)
+
+        return pkt
+
+    def process_values_with_time(self):
+        pass
+
+
 class Greeter(Protocol):
 
     device = None
     level = None
 
+    def __init__(self):
+        self.model = DevModel()
+
     def sendMessage(self, pkt):
-        print "sending message "+pkt
+        print "sending message " + pkt
         self.transport.write(pkt)
-        reactor.callLater(3, self.sendMessage, self.device.sendEquipmentLong(self.device.LEVEL_EQP_CODE, self.level))
+        pkt = self.model.send_vars(self.device)
+        reactor.callLater(3, self.sendMessage, pkt)
 
     def connectionMade(self):
-        #pdataok = self.device.sendRegistration()
-        pdataok=""
+        print "Sending registartion"
+        pdataok = self.device.sendRegistration()
+
 
         #pdatabad = pdataok[:len(pdataok)-1]+'\xd4'
         #p.sendMessage(pdatabad)
@@ -158,10 +193,10 @@ log.startLogging(sys.stdout)
 
 gf = GreeterFactory()
 
-point = TCP4ClientEndpoint(reactor, "localhost", 9000)
+point = TCP4ClientEndpoint(reactor, "kidgo.com.ua", 9000)
 d = point.connect(gf)
 
-point = TCP4ClientEndpoint(reactor, "localhost", 9000)
-d = point.connect(gf)
+#point = TCP4ClientEndpoint(reactor, "localhost", 9000)
+#d = point.connect(gf)
 
 reactor.run()
