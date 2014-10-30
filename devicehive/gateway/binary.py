@@ -453,28 +453,6 @@ class BinaryFormatter(object) :
                 value = value.bytes
             elif len(value) != 16 :
                 raise BinarySerializationError('guid property should of uuid.UUID type or be an array of 16 elements')
-            result.extend(value)
-        elif type == DATA_TYPE_STRING :
-            bstr = array.array('B', value.encode('utf-8'))
-            bstr_len = len(bstr)
-            result.extend(struct.pack('<H', bstr_len))
-            result.extend(bstr)
-        elif type == DATA_TYPE_BINARY :
-            str_len = len(value)
-            result.extend(struct.pack('<H', str_len))
-            result.extend(value)
-        else :
-            BinarySerializationError('unsupported property basic type {0} <{1} = {2}>'.format(type, type(value), value))
-        return result
-    
-    @staticmethod
-    def serialize_array(array_qualifier, value):
-        result = bytearray()
-        result.extend(struct.pack('<H', len(value)))
-        if array_qualifier.is_basic() :
-            for i in value :
-                result.extend(BinaryFormatter.serialize_scalar(array_qualifier.data_type, i))
-        elif array_qualifier.is_array() :
             sub_array_qualifier = array_qualifier.data_type
             for a in value :
                 result.extend(BinaryFormatter.serialize_array(sub_array_qualifier, a.array.__get__(a)))
@@ -491,6 +469,13 @@ class BinaryFormatter(object) :
         for prop in obj.__binary_struct__ :
             if prop.type == DATA_TYPE_OBJECT :
                 result.extend(BinaryFormatter.serialize(prop.__get__(obj)))
+            elif prop.type == DATA_TYPE_BINARY:  # dirty hack
+                object = prop.__get__(obj)
+                length= len(object.v)
+                b1 = (length >>8)
+                b2 = length&0xFF
+                result.extend([b2, b1])
+                result.extend(object.v)
             elif prop.type == DATA_TYPE_ARRAY :
                 result.extend(BinaryFormatter.serialize_array(prop.qualifier, prop.__get__(obj)))
             elif isinstance(prop, binary_property) :

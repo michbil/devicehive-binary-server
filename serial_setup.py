@@ -5,10 +5,12 @@ import devicehive.poll
 import pprint
 import devicehive.gateway
 import devicehive.gateway.binary
+import array
 from twisted.internet import *
 
+from devicehive.gateway.binary import *
 
-from tcp_gateway_daemon import TcpBinaryFactory
+from tcp_binary import TcpBinaryFactory
 
 import pprint
 from serial import PARITY_NONE
@@ -18,6 +20,51 @@ from devicehive.gateway import *
 from devicehive import BaseCommand
 
 from zope.interface import Interface, Attribute, implements
+
+TOTAL_REPEATS= 10
+COUNTER_LEN= 5
+
+EEADDR_LAST_ICASSATION1= 0x34
+EEADDR_LAST_ICASSATION2= 0x38
+
+EEADDR_MONEY= 0x40
+EEADDR_OFFSET= 0x80
+EEADDR_INCASSATIONS= 0x90
+NUM_INCASSATIONS= 10
+EEADDR_LOWER_LIMIT= 0x100
+EEADDR_LOWER_LIMIT_COPY= 0x104
+EEADDR_CALIBRATE_ENDPOINT= 0x108
+EEADDR_VENDING_LOCK= 0x109
+EEADDR_MAX_LEVEL= 0x110
+EEPROM_CONFIG_ADR= 0x130
+
+
+counter_mul = 0
+counter_add = counter_mul + 4
+pressure_zero = counter_add + 4
+
+temp1_on = pressure_zero + 1
+temp1_off = temp1_on + 2
+temp2_on = temp1_off + 2
+temp2_off = temp2_on + 2
+
+volume_50 = temp2_off + 2
+volume_100 = volume_50 + 4
+volume_150 = volume_100 + 4
+volume_200 = volume_150 + 4
+volume_250 = volume_200 + 4
+volume_300 = volume_250 + 4
+
+maxmoney = volume_300 + 4
+allowmany = maxmoney + 2
+
+GUID = allowmany + 1
+NAME = GUID + 40
+
+CHECKSUM = NAME + 40
+LENGTH = CHECKSUM + 4
+
+INC_SZ = 13
 
 
 class BinaryBuffer:
@@ -104,7 +151,7 @@ class BinaryBuffer:
             return
         leng = len(str)
         i=0
-        for i in range(0,leng-1):
+        for i in range(0,leng):
             self.write(adr+i,ord(str[i]))
         self.write(adr+i+1,0)
 
@@ -120,50 +167,6 @@ class BinaryBuffer:
     
     def parse_contents(self):
 
-        TOTAL_REPEATS= 10
-        COUNTER_LEN= 5
-
-        EEADDR_LAST_ICASSATION1= 0x34
-        EEADDR_LAST_ICASSATION2= 0x38
-
-        EEADDR_MONEY= 0x40
-        EEADDR_OFFSET= 0x80
-        EEADDR_INCASSATIONS= 0x90
-        NUM_INCASSATIONS= 10
-        EEADDR_LOWER_LIMIT= 0x100
-        EEADDR_LOWER_LIMIT_COPY= 0x104
-        EEADDR_CALIBRATE_ENDPOINT= 0x108
-        EEADDR_VENDING_LOCK= 0x109
-        EEADDR_MAX_LEVEL= 0x110
-        EEPROM_CONFIG_ADR= 0x130
-
-
-        counter_mul = 0
-        counter_add = counter_mul + 4
-        pressure_zero = counter_add + 4
-
-        temp1_on = pressure_zero + 1
-        temp1_off = temp1_on + 2
-        temp2_on = temp1_off + 2
-        temp2_off = temp2_on + 2
-
-        volume_50 = temp2_off + 2
-        volume_100 = volume_50 + 4
-        volume_150 = volume_100 + 4
-        volume_200 = volume_150 + 4
-        volume_250 = volume_200 + 4
-        volume_300 = volume_250 + 4
-
-        maxmoney = volume_300 + 4
-        allowmany = maxmoney + 2
-
-        GUID = allowmany + 1
-        NAME = GUID + 40
-
-        checksum = NAME + 40
-        len = checksum + 4
-
-        INC_SZ = 13
 
 
         print "Counter coef",
@@ -206,17 +209,24 @@ class BinaryBuffer:
         print "NAME: ",
         print self.readString(EEPROM_CONFIG_ADR+NAME,40)
 
-        cs1 =  self.read_uint32(EEPROM_CONFIG_ADR+checksum)
-        cs2 =  self.calc_checksum(EEPROM_CONFIG_ADR, EEPROM_CONFIG_ADR+checksum)
+        cs1 =  self.read_uint32(EEPROM_CONFIG_ADR+CHECKSUM)
+        cs2 =  self.calc_checksum(EEPROM_CONFIG_ADR, EEPROM_CONFIG_ADR+CHECKSUM)
 
         if cs1 == cs2:
             print "Checksum ok"
 
-            s = raw_input("")
-            self.writeString(EEPROM_CONFIG_ADR+GUID,s,40)
+            return 1;
 
         else:
             print "Checksum failed"
+            return 0
+
+    def modify(self):
+        s = raw_input("")
+        self.writeString(EEPROM_CONFIG_ADR+NAME,s,40)
+        cs = self.calc_checksum(EEPROM_CONFIG_ADR, EEPROM_CONFIG_ADR+CHECKSUM)
+        self.write_uint32(EEPROM_CONFIG_ADR+CHECKSUM, cs)
+
 
 
 
@@ -248,13 +258,13 @@ class DummyGateway:
 
         def succ(status):
             print status.status,status.result
-            self.addr=self.base.addr+16
+            self.addr=self.addr+16
             if self.addr < 1024:
                 self.send_read_cmd()
             else:
                 self.read_finished=1;
 
-        result_proto = Deferred()
+        result_proto = defer.Deferred()
         result_proto.addCallbacks(succ,fail)
 
         self.do_command(self.id,command,result_proto)
@@ -263,9 +273,21 @@ class DummyGateway:
         command = BaseCommand()
         command.command = "WEE"
 
-        l=[self.eedata[self.addr:self.addr+16] for x in xrange(0, len(self.eedata), 16)]
+        l= self.eedata.buffer[self.addr:self.addr+16]
 
-        command.parameters= {"adr":self.addr,"data":l}
+        class write_binary_struct:
+
+            def __init__(self,v):
+                self.v = v
+                values = array_binary_property(ArrayQualifier(DATA_TYPE_BYTE), *define_accessors('v'))
+                self.__binary_struct__= [values]
+
+            def __get__(self):
+                return v
+
+
+        s = write_binary_struct(l)
+        command.parameters= {"adr":self.addr,"value":s}
 
         def fail(reason):
             print "Error during command"
@@ -279,7 +301,7 @@ class DummyGateway:
             else:
                 self.read_finished=1;
 
-        result_proto = Deferred()
+        result_proto = defer.Deferred()
         result_proto.addCallbacks(succ,fail)
 
         self.do_command(self.id,command,result_proto)
@@ -291,9 +313,25 @@ class DummyGateway:
 
         self.do_command(self.id,command,None)
 
+    def send_service_cmd(self):
+        command = BaseCommand()
+        command.command = "SM"
+        command.parameters= {"enter":1,"pass":"gnqYoo[14^^^1z/"}
+
+        def fail(reason):
+            print "Error during command"
+            print reason
+
+        def succ(status):
+            print status.status,status.result
 
 
-    def registration_received(self, info):
+        result_proto = defer.Deferred()
+        result_proto.addCallbacks(succ,fail)
+
+        self.do_command(self.id,command,result_proto)
+
+    def registration_received(self, info, gw):
         """
         Method is called when new registration request comes from device(es).
         Method could be overridden in subclass to change device registration behaviour
@@ -312,6 +350,7 @@ class DummyGateway:
 
         self.addr=0
         self.send_read_cmd()
+        #self.send_service_cmd()
 
 
 
@@ -339,7 +378,13 @@ class DummyGateway:
                 print "eeprom block received "+str(notification.parameters['adr'])
                 self.eedata.append(notification.parameters['value'])
                 if self.read_finished:
-                    self.eedata.parse_contents()
+                    if self.eedata.parse_contents():
+
+                        self.eedata.modify()
+                        self.eedata.parse_contents()
+
+                        self.addr=0
+                        self.send_write_cmd()
             else:
                  print notification
 
