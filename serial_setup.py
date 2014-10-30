@@ -5,8 +5,8 @@ import devicehive.poll
 import pprint
 import devicehive.gateway
 import devicehive.gateway.binary
-from twisted.internet import reactor
-from twisted.internet import Deferred
+from twisted.internet import *
+
 
 from tcp_gateway_daemon import TcpBinaryFactory
 
@@ -231,13 +231,6 @@ class DummyGateway:
 
     read_finished=0
 
-
-    class CommandCallback():
-        def __init__(self,base):
-            self.base = base
-        def errback(self,reason):
-
-        def callback(self,status):
 
 
     def process_data(self):
