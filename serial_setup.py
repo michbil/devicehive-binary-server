@@ -6,6 +6,7 @@ import pprint
 import devicehive.gateway
 import devicehive.gateway.binary
 from twisted.internet import reactor
+from twisted.internet import Deferred
 
 from tcp_gateway_daemon import TcpBinaryFactory
 
@@ -235,17 +236,9 @@ class DummyGateway:
         def __init__(self,base):
             self.base = base
         def errback(self,reason):
-            print "Error during command"
-            print reason
+
         def callback(self,status):
-            print status.status,status.result
-            self.base.addr=self.base.addr+16
 
-
-            if self.base.addr < 1024:
-                self.base.send_read_cmd()
-            else:
-                self.base.read_finished=1;
 
     def process_data(self):
         print self.eedata
@@ -256,7 +249,22 @@ class DummyGateway:
         command.command = "REE"
         command.parameters= {"adr":self.addr}
 
-        self.do_command(self.id,command,None)
+        def succ(reason):
+            print "Error during command"
+            print reason
+
+        def fail(status):
+            print status.status,status.result
+            self.addr=self.base.addr+16
+            if self.addr < 1024:
+                self.send_read_cmd()
+            else:
+                self.read_finished=1;
+
+        result_proto = Deferred()
+        result_proto.addCallbacks(succ,fail)
+
+        self.do_command(self.id,command,result_proto)
 
     def send_ping_cmd(self):
         command = BaseCommand()
@@ -332,7 +340,7 @@ class DummyGateway:
         @param finish_deferred:
         """
         print "Making command "+command.command
-        self.device_factory.do_command(info, command, self.CommandCallback(self))
+        self.device_factory.do_command(info, command, finish_deferred)
 
 dummygw = DummyGateway()
 factory = TcpBinaryFactory(dummygw)
