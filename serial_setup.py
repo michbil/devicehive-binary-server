@@ -164,53 +164,57 @@ class BinaryBuffer:
 
         return cs
 
-    
+
     def parse_contents(self):
+
+        return self.parse_config(EEPROM_CONFIG_ADR) & self.parse_config(EEPROM_CONFIG_ADR+LENGTH)
+
+    def parse_config(self,offset):
 
 
 
         print "Counter coef",
-        print self.read_uint32(EEPROM_CONFIG_ADR + counter_mul)
+        print self.read_uint32(offset + counter_mul)
         print "Counter add",
-        print float(self.read_uint32(EEPROM_CONFIG_ADR + counter_add)) / 1000000.0
+        print float(self.read_uint32(offset + counter_add)) / 1000000.0
         print "Pressure sensor zero",
-        print float(self.read_uint8(EEPROM_CONFIG_ADR + pressure_zero))*5.0/1024.0
+        print float(self.read_uint8(offset + pressure_zero))*5.0/1024.0
 
         print "T on",
-        print float(self.read_uint16(EEPROM_CONFIG_ADR + temp1_on))/10.0
+        print float(self.read_uint16(offset + temp1_on))/10.0
         print "T off",
-        print self.read_uint16(EEPROM_CONFIG_ADR + temp1_off)/10.0
+        print self.read_uint16(offset + temp1_off)/10.0
 
         print "T on",
-        print self.read_uint16(EEPROM_CONFIG_ADR + temp2_on)/10.0
+        print self.read_uint16(offset + temp2_on)/10.0
         print "T off",
-        print self.read_uint16(EEPROM_CONFIG_ADR + temp2_off)/10.0
+        print self.read_uint16(offset + temp2_off)/10.0
 
         print "Price 0.50",
-        print self.read_int32(EEPROM_CONFIG_ADR + volume_50)/ 1000000.0
+        print self.read_int32(offset + volume_50)/ 1000000.0
         print "Price 1.00",
-        print self.read_int32(EEPROM_CONFIG_ADR + volume_100) / 1000000.0
+        print self.read_int32(offset + volume_100) / 1000000.0
         print "Price 1.50",
-        print self.read_int32(EEPROM_CONFIG_ADR + volume_150) / 1000000.0
+        print self.read_int32(offset + volume_150) / 1000000.0
         print "Price 2.00",
-        print self.read_int32(EEPROM_CONFIG_ADR + volume_200) / 1000000.0
+        print self.read_int32(offset + volume_200) / 1000000.0
         print "Price 2.50",
-        print self.read_int32(EEPROM_CONFIG_ADR + volume_250) / 1000000.0
+        print self.read_int32(offset + volume_250) / 1000000.0
         print "Price 3.00",
-        print self.read_int32(EEPROM_CONFIG_ADR + volume_300) / 1000000.0
+        print self.read_int32(offset + volume_300) / 1000000.0
 
         print "Maxmoney",
-        print self.read_uint16(EEPROM_CONFIG_ADR + maxmoney)/10.0
+        print self.read_uint16(offset + maxmoney)/10.0
         print "alllowmany",
-        print self.read_uint8(EEPROM_CONFIG_ADR + allowmany)
+        print self.read_uint8(offset + allowmany)
 
         print "GUID: ",
-        print self.readString(EEPROM_CONFIG_ADR+GUID,40)
+        print self.readString(offset+GUID,40)
         print "NAME: ",
-        print self.readString(EEPROM_CONFIG_ADR+NAME,40)
+        print self.readString(offset+NAME,40)
 
-        cs1 =  self.read_uint32(EEPROM_CONFIG_ADR+CHECKSUM)
-        cs2 =  self.calc_checksum(EEPROM_CONFIG_ADR, EEPROM_CONFIG_ADR+CHECKSUM)
+        cs1 =  self.read_uint32(offset+CHECKSUM)
+        cs2 =  self.calc_checksum(offset, offset+CHECKSUM)
 
         if cs1 == cs2:
             print "Checksum ok"
@@ -223,9 +227,14 @@ class BinaryBuffer:
 
     def modify(self):
         s = raw_input("")
-        self.writeString(EEPROM_CONFIG_ADR+NAME,s,40)
-        cs = self.calc_checksum(EEPROM_CONFIG_ADR, EEPROM_CONFIG_ADR+CHECKSUM)
-        self.write_uint32(EEPROM_CONFIG_ADR+CHECKSUM, cs)
+        self.modify_config(s,EEPROM_CONFIG_ADR);
+        self.modify_config(s,EEPROM_CONFIG_ADR+LENGTH);
+
+    def modify_config(self,s,offset):
+
+        self.writeString(offset+NAME,s,40)
+        cs = self.calc_checksum(offset, offset+CHECKSUM)
+        self.write_uint32(offset+CHECKSUM, cs)
 
 
 
