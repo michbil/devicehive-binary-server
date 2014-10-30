@@ -13,7 +13,7 @@ from twisted.internet.defer import Deferred, fail
 from devicehive import CommandResult, DhError, BaseCommand
 from devicehive.interfaces import IProtoFactory, IProtoHandler, IDeviceInfo, INetwork, IDeviceClass, ICommand
 from devicehive.ws import IWebSocketProtocolCallback, IWebSocketMessanger, WebSocketError, WebSocketDeviceHiveProtocol
-
+import time
 
 __all__ = ['WsCommand', 'WebSocketFactory']
 
@@ -94,6 +94,7 @@ class WebSocketFactory(ClientFactory):
 
     def stopFactory(self):
         print "WS FACTORY STOPPING"
+        time.sleep(1);
         self.handler.connect_ws() #dirty hack
 
 

@@ -249,15 +249,40 @@ class DummyGateway:
         command.command = "REE"
         command.parameters= {"adr":self.addr}
 
-        def succ(reason):
+        def fail(reason):
             print "Error during command"
             print reason
 
-        def fail(status):
+        def succ(status):
             print status.status,status.result
             self.addr=self.base.addr+16
             if self.addr < 1024:
                 self.send_read_cmd()
+            else:
+                self.read_finished=1;
+
+        result_proto = Deferred()
+        result_proto.addCallbacks(succ,fail)
+
+        self.do_command(self.id,command,result_proto)
+
+    def send_write_cmd(self):
+        command = BaseCommand()
+        command.command = "WEE"
+
+        l=[self.eedata[self.addr:self.addr+16] for x in xrange(0, len(self.eedata), 16)]
+
+        command.parameters= {"adr":self.addr,"data":l}
+
+        def fail(reason):
+            print "Error during command"
+            print reason
+
+        def succ(status):
+            print status.status,status.result
+            self.addr=self.addr+16
+            if self.addr < 1024:
+                self.send_write_cmd()
             else:
                 self.read_finished=1;
 
@@ -292,6 +317,7 @@ class DummyGateway:
 
         self.id = info.id
 
+        self.addr=0
         self.send_read_cmd()
 
 
