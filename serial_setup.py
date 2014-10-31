@@ -7,6 +7,7 @@ import devicehive.gateway
 import devicehive.gateway.binary
 import array
 from twisted.internet import *
+import uuid
 
 from devicehive.gateway.binary import *
 
@@ -227,12 +228,14 @@ class BinaryBuffer:
 
     def modify(self):
         s = raw_input("")
-        self.modify_config(s,EEPROM_CONFIG_ADR);
-        self.modify_config(s,EEPROM_CONFIG_ADR+LENGTH);
+        id = uuid.uuid4().hex
+        self.modify_config(s,id,EEPROM_CONFIG_ADR);
+        self.modify_config(s,id,EEPROM_CONFIG_ADR+LENGTH);
 
-    def modify_config(self,s,offset):
+    def modify_config(self,s,guid,offset):
 
         self.writeString(offset+NAME,s,40)
+        self.writeString(offset+GUID,guid,40)
         cs = self.calc_checksum(offset, offset+CHECKSUM)
         self.write_uint32(offset+CHECKSUM, cs)
 
