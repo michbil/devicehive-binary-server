@@ -128,15 +128,21 @@ class DeviceClass(object):
     
     implements(IDeviceClass)
     
-    def __init__(self, name = None, version = None, is_permanent = None):
+    def __init__(self, name=None, version=None, is_permanent=None, offline_timeout=None, data=None):
         self.name = name
         self.version = version
-        self.is_permanent = is_permanent
+        self.isPermanent = is_permanent
+        self.offlineTimeout = offline_timeout
+        self.data = data
     
     def to_dict(self):
         res = {'name': self.name, 'version': self.version}
-        if self.is_permanent is not None :
-            res['is_permanent'] = self.is_permanent
+        if self.isPermanent is not None :
+            res['isPermanent'] = self.isPermanent
+        if self.offlineTimeout is not None :
+            res['offlineTimeout'] = self.offlineTimeout
+        if self.data is not None :
+            res['data'] = self.data
         return res
 
 
@@ -171,7 +177,8 @@ class DeviceInfo(object):
         self.device_class = device_class
         self.equipment = equipment
     
-
+    def __str__(self):
+            return '<id: "{0}", name: "{1}", ... >'.format(self.id, self.name)
     
     def to_dict(self):
         res = {'key': self.key,
@@ -179,7 +186,7 @@ class DeviceInfo(object):
         if self.status is not None :
             res['status'] = self.status
         if self.data is not None :
-            res['data'] = data
+            res['data'] = self.data
         if self.network is not None :
             res['network'] = self.network.to_dict() if INetwork.implementedBy(self.network.__class__) else self.network
         res['deviceClass'] = self.device_class.to_dict() if IDeviceClass.implementedBy(self.device_class.__class__) else self.device_class

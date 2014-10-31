@@ -6,6 +6,8 @@ Client API implementation for WebSocket protocol.
 """
 
 from sys import maxint
+from urlparse import urlparse, urljoin
+
 from twisted.python import log
 from twisted.internet import reactor
 from twisted.internet.defer import Deferred, fail
@@ -34,16 +36,21 @@ class WsCommand(BaseCommand):
     send 'result' field from the client to a device.
     """
     
-    def __init__(self, command, parameters = None):
+    def __init__(self, command, parameters=None):
         super(WsCommand, self).__init__()
         self.command = command
         self.parameters = parameters
     
     @staticmethod
     def create(cmd):
-        if not isinstance(cmd, dict) :
-            raise TypeError('cmd should be a dict.')
+        """
+        :param cmd:a ``dict`` which is used to construct an instance of WsCommand
+        """
+        if not isinstance(cmd, dict):
+            raise TypeError('cmd argument should be a dict')
+
         res = WsCommand(cmd['command'], cmd['parameters'] if 'parameters' in cmd else [])
+
         res.id = cmd['id']
         res.timestamp = cmd['timestamp'] if 'timestamp' in cmd else None
         res.user_id = cmd['userId'] if 'userId' in cmd else None
@@ -69,25 +76,32 @@ class WebSocketFactory(ClientFactory):
     Implements client factory over websocket protocol.
     See devicehive.interfaces.IClientTransport for methods description.
     """
-    
+
     implements(IClientTransport, IWebSocketProtocolCallback)
-    
-    url = 'localhost'
-    host = 'localhost'
-    port = 8010
+
+    url = 'ws://localhost'
     proto = None
-    
+
     def __init__(self, handler):
         if not IClientApp.implementedBy(handler.__class__) :
             raise TypeError('handler must implement devicehive.interfaces.IClientApp interface.')
         self.handler = handler
         self.handler.factory = self
         self.command_callbacks = {}
-    
+
+    def get_client_url(self):
+        if not self.url:
+            return '/client'
+        else:
+            path = urlparse(self.url).path
+            if path[-1:] != '/':
+                path += '/'
+            return urljoin(path, 'client')
+
     def buildProtocol(self, addr):
-        self.proto = WebSocketDeviceHiveProtocol(self, '/client')
+        self.proto = WebSocketDeviceHiveProtocol(self, self.get_client_url())
         return self.proto
-    
+
     def clientConnectionFailed(self, connector, reason):
         LOG_ERR('Client connection failed. Reason: {0}.'.format(reason))
         self.handler.failure(reason)
@@ -198,6 +212,8 @@ class WebSocketFactory(ClientFactory):
         return self.proto.ping()
     
     def connect(self, url):
+        LOG_MSG('Connecting to {0} server.'.format(url))
+        self.url = url
         reactor.connectDeviceHive(url, self)
     # end IClientTransport interface implementation
     

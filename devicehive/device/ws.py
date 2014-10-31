@@ -73,7 +73,7 @@ class WebSocketFactory(ClientFactory):
     
     implements(IWebSocketProtocolCallback, IProtoFactory)
     
-    url = 'localhost'
+    url = 'ws://localhost'
     host = 'localhost'
     port = 80
     proto = None
@@ -86,9 +86,9 @@ class WebSocketFactory(ClientFactory):
         @param handler: handler has to implement C{IProtoHandler} interface
         """
         self.handler = handler
-        if IProtoHandler.implementedBy(self.handler.__class__) :
+        if IProtoHandler.implementedBy(self.handler.__class__):
             self.handler.factory = self
-        else :
+        else:
             raise TypeError('handler should implements IProtoHandler interface')
         self.devices = {}
 
@@ -235,6 +235,8 @@ class WebSocketFactory(ClientFactory):
     
     def device_save(self, info):
         LOG_MSG('device_save {0}'.format(info))
+
+
         if not IDeviceInfo.implementedBy(info.__class__) :
             raise WebSocketError('info parameter has to implement IDeviceInfo interface')
         dev = {'key': info.key, 'name': info.name, 'equipment': [e.to_dict() for e in info.equipment]}
@@ -242,6 +244,8 @@ class WebSocketFactory(ClientFactory):
             dev['status'] = info.status
         if info.network is not None :
             dev['network'] = info.network.to_dict() if INetwork.implementedBy(info.network.__class__) else info.network
+        if info.data is not None :
+            dev['data'] = info.data
         if info.device_class is not None :
             dev['deviceClass'] = info.device_class.to_dict() if IDeviceClass.implementedBy(info.device_class.__class__) else info.device_class
         request = {'action': 'device/save', 'deviceId': info.id, 'deviceKey': info.key, 'device': dev}

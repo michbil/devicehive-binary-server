@@ -26,7 +26,7 @@ class Gateway(devicehive.gateway.BaseGateway):
         super(Gateway, self).__init__(url, factory_cls)
     
     def registration_received(self, device_info):
-        super(Gateway, self).registration_received(device_info)
+        super(Gateway, self).registration_received(device_info,None)
     
     def notification_received(self, device_info, notification):
         super(Gateway, self).notification_received(device_info, notification)
@@ -44,7 +44,7 @@ def main(sport, brate):
     devicehive.auto.PollFactory.noisy=0
     log.startLogging(sys.stdout)
 
-    gateway = Gateway('http://kidgo.com.ua:8080/DeviceHiveJava/rest', devicehive.auto.PollFactory)
+    gateway = Gateway('http://kidgo.com.ua:8080/DeviceHiveJava/rest', devicehive.auto.AutoFactory)
     # create endpoint and factory to be used to organize communication channel to device
     endpoint = devicehive.gateway.binary.SerialPortEndpoint(reactor, \
                                                             sport, \
