@@ -11,6 +11,9 @@ import uuid
 
 from devicehive.gateway.binary import *
 
+from Tkinter import *
+from twisted.internet import tksupport, reactor
+
 from tcp_binary import TcpBinaryFactory
 
 import pprint
@@ -360,8 +363,7 @@ class DummyGateway:
 
         self.id = info.id
 
-        self.addr=0
-        self.send_read_cmd()
+
         #self.send_service_cmd()
 
 
@@ -433,5 +435,17 @@ endpoint.listen(factory)
 
 
 
+root = Tk()
 
+def Start(sender):
+    dummygw.addr=0
+    dummygw.send_read_cmd()
+
+
+btn = Button(root,             text="Click me",             width=30,height=5,             bg="white",fg="black")
+btn.bind("<Button-1>", Start)
+btn.pack()
+
+# Install the Reactor support
+tksupport.install(root)
 reactor.run()
