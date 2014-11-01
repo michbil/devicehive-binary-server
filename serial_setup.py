@@ -290,19 +290,11 @@ class DummyGateway:
 
         l= self.eedata.buffer[self.addr:self.addr+16]
 
-        class write_binary_struct:
-
-            def __init__(self,v):
-                self.v = v
-                values = array_binary_property(ArrayQualifier(DATA_TYPE_BYTE), *define_accessors('v'))
-                self.__binary_struct__= [values]
-
-            def __get__(self):
-                return v
 
 
-        s = write_binary_struct(l)
-        command.parameters= {"adr":self.addr,"value":s}
+
+
+        command.parameters= {"adr":self.addr,"value":l}
 
         def fail(reason):
             print "Error during command"
@@ -328,10 +320,10 @@ class DummyGateway:
 
         self.do_command(self.id,command,None)
 
-    def send_service_cmd(self):
+    def send_service_cmd(self,enter):
         command = BaseCommand()
         command.command = "SM"
-        command.parameters= {"enter":1,"pass":"gnqYoo[14^^^1z/"}
+        command.parameters= {"enter":enter,"pass":"gnqYoo[14^^^1z/"}
 
         def fail(reason):
             print "Error during command"
@@ -364,7 +356,7 @@ class DummyGateway:
         self.id = info.id
 
 
-        #self.send_service_cmd()
+
 
 
 
@@ -437,14 +429,40 @@ endpoint.listen(factory)
 
 root = Tk()
 
-def Start(sender):
+def StartRead(sender):
     dummygw.addr=0
     dummygw.send_read_cmd()
 
+def StartWrite(sender):
+    pass
+    #dummygw.addr=0
+    #dummygw.send_read_cmd()
 
-btn = Button(root,             text="Click me",             width=30,height=5,             bg="white",fg="black")
-btn.bind("<Button-1>", Start)
-btn.pack()
+def EnterService(sender):
+    print "Entering service"
+    dummygw.send_service_cmd(1)
+
+
+def ExitService(sender):
+    print "Exiting service"
+    dummygw.send_service_cmd(0)
+
+
+btn_serv_start = Button(root,           text="ENTER SERVICE",             width=30,height=5,            bg="white",fg="black")
+btn_serv_stop = Button(root,            text="EXIT SERVICE",             width=30,height=5,             bg="white",fg="black")
+btn_read = Button(root,             text="READ",             width=30,height=5,             bg="white", fg="black")
+btn_write = Button(root,             text="WRITE",           width=30,height=5,             bg="white", fg="black")
+
+btn_read.bind("<Button-1>", StartRead)
+btn_write.bind("<Button-1>", StartWrite)
+btn_serv_start.bind("<Button-1>", EnterService)
+btn_serv_stop.bind("<Button-1>", ExitService)
+
+btn_serv_start.pack(side='left')
+btn_serv_stop.pack(side='left')
+btn_read.pack(side='left')
+btn_write.pack(side='left')
+
 
 # Install the Reactor support
 tksupport.install(root)
