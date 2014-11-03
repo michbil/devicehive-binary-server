@@ -39,7 +39,7 @@ def start():
 
     log.startLogging(sys.stdout)
     devicehive.poll.RequestFactory.noisy=0
-    gateway = Gateway('http://kidgo.com.ua:8080/DeviceHiveJava/rest', devicehive.auto.AutoFactory)
+    gateway = Gateway('http://kidgo.com.ua:8080/DeviceHiveJava/rest', devicehive.auto.PollFactory)
     #gateway = Gateway('http://nn6029.pg.devicehive.com/api', devicehive.auto.PollFactory)
 
     # create endpoint and factory to be used to organize communication channel to device
@@ -68,7 +68,7 @@ class BinTCPDaemon(Daemon):
         log.startLogging(open('/tmp/bintcpd.log', 'w'))
 
         devicehive.poll.RequestFactory.noisy=0
-        gateway = Gateway('http://kidgo.com.ua:8080/DeviceHiveJava/rest', devicehive.auto.AutoFactory)
+        gateway = Gateway('http://kidgo.com.ua:8080/DeviceHiveJava/rest', devicehive.auto.PollFactory)
 
         # create endpoint and factory to be used to organize communication channel to device
         endpoint = TCP4ServerEndpoint(reactor, 9000)
