@@ -251,7 +251,7 @@ class Gateway(devicehive.gateway.BaseGateway):
     def send_ping_cmd(self,id):
         command = BaseCommand()
         command.command = "PN"
-        command.parameters= {"UPD":1}
+        command.parameters= {"upd":1}
 
         self.do_command(id,command,self.CommandCallback(self))
 
