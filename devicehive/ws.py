@@ -22,7 +22,9 @@ from twisted.internet.defer import Deferred, fail
 from twisted.internet.protocol import Protocol
 from twisted.protocols.basic import LineReceiver
 from devicehive import DhError
+import threading
 
+REFRESH_TIME=10
 
 __all__ = ['WebSocketError', 'WebSocketState', 'WebSocketParser', 'WebSocketProtocol13',
            'WebSocketDeviceHiveProtocol', 'IWebSocketParserCallback',
@@ -266,7 +268,18 @@ class WebSocketParser(LineReceiver) :
 
 class WebSocketProtocol13(object):
     implements(IWebSocketParserCallback)
-    
+
+    first=0;
+
+    def timer(self):
+        pass
+        #threading.Timer(REFRESH_TIME, self.timer).start()
+        #print ("Force pong")
+        #if self.first > 0:
+            #self.ping()
+         #   self.send_frame(True, WS_OPCODE_PONG, "0x1")
+        #self.first=1;
+
     def __init__(self, handler, transport, host, uri):
         """
         @type handler: C{object}
@@ -285,6 +298,7 @@ class WebSocketProtocol13(object):
         self.rand = Random(long(time()))
         self.security_key = base64.b64encode(array('B', [self.rand.randint(0, 0xff) for x in range(12)]).tostring())
         self.parser = WebSocketParser(self)
+
     
     def dataReceived(self, data):
         self.parser.dataReceived(data)
@@ -314,11 +328,14 @@ class WebSocketProtocol13(object):
     def headers_received(self):
         if self.test_handler() :
             self.handler.headers_received()
+
+
+
     
     def frame_received(self, opcode, payload):
-        log.msg('Websocket frame ({0}) has been received. Frame data: {1}.'.format(opcode, payload))
+        log.msg('Websocket frame ({0}) has been received. Frame data: {1}.'.format(opcode, payload.replace("\n",'')))
         if opcode == WS_OPCODE_PING:
-            log.msg('Responding with pong packaet.')
+            log.msg('Responding with pong packet.')
             self.send_frame(True, WS_OPCODE_PONG, payload)
         elif opcode == WS_OPCODE_PONG:
             self.handler.pong_received(payload)
@@ -348,6 +365,7 @@ class WebSocketProtocol13(object):
         data = header.format(self.host, self.security_key).encode('utf-8')
         log.msg('Sending header: {0}'.format(data))
         self.transport.write(data)
+        self.timer();
     
     def send_frame(self, fin, opcode, data) :
         prefix = (0x80 if fin else 0x00) | opcode
@@ -368,6 +386,7 @@ class WebSocketProtocol13(object):
 class WebSocketDeviceHiveProtocol(Protocol):
     
     implements(IWebSocketCallback, IWebSocketMessanger)
+    first=0
     
     def __init__(self, factory, uri, timeout = 10):
         """
@@ -401,7 +420,7 @@ class WebSocketDeviceHiveProtocol(Protocol):
             self.factory.closing_connection()
     
     def frame_received(self, payload):
-        log.msg('Websocket message has been received {0}.'.format(payload))
+        log.msg('Websocket message has been received {0}.'.format(payload.replace("\n",'')))
         message = json.loads(payload)
         if 'requestId' in message :
             request_id = message['requestId']

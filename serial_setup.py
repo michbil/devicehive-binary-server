@@ -313,12 +313,22 @@ class DummyGateway:
 
         self.do_command(self.id,command,result_proto)
 
-    def send_ping_cmd(self):
+    def send_ping_cmd(self,upd):
         command = BaseCommand()
         command.command = "PN"
-        command.parameters= {"UPD":1}
+        command.parameters= {"upd":upd}
 
-        self.do_command(self.id,command,None)
+        def fail(reason):
+            print "Error during command"
+            print reason
+
+        def succ(status):
+            print status.status,status.result
+
+        result_proto = defer.Deferred()
+        result_proto.addCallbacks(succ,fail)
+
+        self.do_command(self.id,command,result_proto)
 
     def send_service_cmd(self,enter):
         command = BaseCommand()
@@ -448,20 +458,26 @@ def ExitService(sender):
     dummygw.send_service_cmd(0)
 
 
+def Ping(sender):
+    dummygw.send_ping_cmd(1)
+
 btn_serv_start = Button(root,           text="ENTER SERVICE",             width=30,height=5,            bg="white",fg="black")
 btn_serv_stop = Button(root,            text="EXIT SERVICE",             width=30,height=5,             bg="white",fg="black")
 btn_read = Button(root,             text="READ",             width=30,height=5,             bg="white", fg="black")
 btn_write = Button(root,             text="WRITE",           width=30,height=5,             bg="white", fg="black")
+btn_ping = Button(root,             text="PING",           width=30,height=5,             bg="white", fg="black")
 
 btn_read.bind("<Button-1>", StartRead)
 btn_write.bind("<Button-1>", StartWrite)
 btn_serv_start.bind("<Button-1>", EnterService)
 btn_serv_stop.bind("<Button-1>", ExitService)
+btn_ping.bind("<Button-1>", Ping)
 
 btn_serv_start.pack(side='left')
 btn_serv_stop.pack(side='left')
 btn_read.pack(side='left')
 btn_write.pack(side='left')
+btn_ping.pack(side='left')
 
 
 # Install the Reactor support

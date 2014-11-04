@@ -232,10 +232,11 @@ class Gateway(devicehive.gateway.BaseGateway):
         super(Gateway, self).registration_received(device_info,obj)
 
     def notification_received(self, device_info, notification):
+        print "ntf received "+notification.name
         if notification.name=="EEB":
             notification.parameters['value'] = notification.parameters['value'].tolist()
         super(Gateway, self).notification_received(device_info, notification)
-        super(Gateway, self).notification_received(device_info, notification)
+       # super(Gateway, self).notification_received(device_info, notification)
 
     def do_command(self, sender, command, finish_deferred):
         super(Gateway, self).do_command(sender, command, finish_deferred)
