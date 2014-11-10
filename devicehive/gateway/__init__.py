@@ -87,6 +87,7 @@ class BaseGateway(object):
             pass
         
         def on_command(self, device_id, command, finished):
+            log.err("ProtoHandler got command");
             self.gateway.do_command(device_id, command, finished)
         
         def on_failure(self, device_id, reason):
