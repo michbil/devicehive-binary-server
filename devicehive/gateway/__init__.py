@@ -87,8 +87,7 @@ class BaseGateway(object):
             pass
         
         def on_command(self, device_id, command, finished):
-            log.err("ProtoHandler got command");
-            self.gateway.do_command(device_id, command, finished)
+            self.gateway.do_command(device_id, command, finished) # this got command first!
         
         def on_failure(self, device_id, reason):
             pass
@@ -122,7 +121,7 @@ class BaseGateway(object):
         if self.connected :
             self.factory.notify(notification.name, notification.parameters, info.id, info.key)
     
-    def do_command(self, device_id, command, finish_deferred):
+    def do_command(self, device_id, command, finish_deferred): # this got command second, but when device disconnects, copy do not killed
         if device_id in self.device_objs :
             dev = self.device_objs[device_id]
             dev.do_command(device_id, command, finish_deferred)

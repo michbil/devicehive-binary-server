@@ -18,8 +18,9 @@ class BasicBinaryProtocol(Protocol):
     Binary protocol implementation.
     """
 
-    def __init__(self, factory):
-        #self.factory = factory
+    def __init__(self, factory,num):
+        self.num = num
+        self.factory = factory
         self.packet_buffer = BinaryPacketBuffer()
         self.command_descriptors = {}
         self.notification_descriptors = {}
@@ -93,6 +94,10 @@ class TcpBinaryProtocol(BasicBinaryProtocol):
         print "New protocol connection made"
         pkt = RegistrationRequestPacket()
         self.transport.write(pkt.to_binary())
+
+    def connectionLost(self, reason):
+        self.factory.notify_connection_lost(self)
+        return BasicBinaryProtocol.connectionLost(self,reason)
 
     """ this methods were moved from binaryfactory to binary protocol to allow serving multiple binary connections """
 
@@ -204,21 +209,30 @@ class TcpBinaryFactory(ServerFactory):
         #self.protocol = None
         self.gateway = gateway
         self.protocols = []
+        self.protocolnum = 0
 
     def buildProtocol(self, addr):
         log.msg('BinaryFactory.buildProtocol')
-        protocol = TcpBinaryProtocol(self)
+        protocol = TcpBinaryProtocol(self,self.protocolnum)
         protocol.gateway = self.gateway
 
         self.protocols.append(protocol)
+        self.protocolnum = self.protocolnum+1
 
         return protocol
 
+    def notify_connection_lost(self,protocol):
+        for i, o in enumerate(self.protocols):
+            if o.num == protocol.num:
+                del self.protocols[i]
+                break
+
     def do_command(self, device_id, command, finish_deferred):
+        print "Sending command to all connected protocols"
         for p in self.protocols:
             if p.id == device_id:
                 p.do_command(device_id,command,finish_deferred)
-                return
+                # send to all connected protocols this command
 
 import time, threading
 
