@@ -99,6 +99,7 @@ class BaseGateway(object):
     
     def connect_device(self, info):
         def on_subscribe(result) :
+            self.factory.unsubscribe(info.id, info.key)
             self.factory.subscribe(info.id, info.key)
         def on_failed(reason) :
             log.err('Failed to save device {0}. Reason: {1}.'.format(info, reason))
@@ -106,8 +107,9 @@ class BaseGateway(object):
     
     def on_connected(self):
         self.connected = True
-        for key in self.devices :
+        for key in self.devices:
             self.connect_device(self.devices[key])
+
     def protocol_registered(self,protocol):
         self.protocols.append(protocol)
 
@@ -115,7 +117,7 @@ class BaseGateway(object):
         log.msg('Device {0} has sent registration information.'.format(info))
         self.devices[info.id] = info
 
-        if self.connected :
+        if self.connected:
             self.connect_device(info)
     
     def notification_received(self, info, notification):
