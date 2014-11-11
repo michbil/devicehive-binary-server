@@ -99,7 +99,7 @@ class BaseGateway(object):
     
     def connect_device(self, info):
         def on_subscribe(result) :
-            self.factory.unsubscribe(info.id, info.key)
+            #self.factory.unsubscribe(info.id, info.key)
             self.factory.subscribe(info.id, info.key)
         def on_failed(reason) :
             log.err('Failed to save device {0}. Reason: {1}.'.format(info, reason))
