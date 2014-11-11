@@ -109,10 +109,10 @@ class BaseGateway(object):
         for key in self.devices :
             self.connect_device(self.devices[key])
     
-    def registration_received(self, info, obj):
+    def registration_received(self, info, protocol):
         log.msg('Device {0} has sent registration information.'.format(info))
         self.devices[info.id] = info
-        self.device_objs[info.id] = obj
+        self.device_objs[info.id] = protocol
         if self.connected :
             self.connect_device(info)
     
@@ -120,8 +120,17 @@ class BaseGateway(object):
         log.msg('Device {0} has sent notification {1}.'.format(info, notification))
         if self.connected :
             self.factory.notify(notification.name, notification.parameters, info.id, info.key)
-    
+
+    def notify_connection_lost(self,protocol):
+        print "Deleting dead protocol"
+        for i, o in enumerate(self.device_objs):
+            if o.num == protocol.num:
+                del self.protocols[i]
+                print "Dead proto found"
+                break
+
     def do_command(self, device_id, command, finish_deferred): # this got command second, but when device disconnects, copy do not killed
+        
         if device_id in self.device_objs :
             dev = self.device_objs[device_id]
             dev.do_command(device_id, command, finish_deferred)

@@ -96,7 +96,7 @@ class TcpBinaryProtocol(BasicBinaryProtocol):
         self.transport.write(pkt.to_binary())
 
     def connectionLost(self, reason):
-        self.factory.notify_connection_lost(self)
+        self.gateway.notify_connection_lost(self)
         return BasicBinaryProtocol.connectionLost(self,reason)
 
     """ this methods were moved from binaryfactory to binary protocol to allow serving multiple binary connections """
@@ -221,18 +221,14 @@ class TcpBinaryFactory(ServerFactory):
 
         return protocol
 
-    def notify_connection_lost(self,protocol):
-        for i, o in enumerate(self.protocols):
-            if o.num == protocol.num:
-                del self.protocols[i]
-                break
 
-    def do_command(self, device_id, command, finish_deferred):
-        print "Sending command to all connected protocols"
-        for p in self.protocols:
-            if p.id == device_id:
-                p.do_command(device_id,command,finish_deferred)
-                # send to all connected protocols this command
+
+#    def do_command(self, device_id, command, finish_deferred):
+#        print "Sending command to all connected protocols"
+#        for p in self.protocols:
+#            if p.id == device_id:
+#                p.do_command(device_id,command,finish_deferred)
+#                # send to all connected protocols this command
 
 import time, threading
 

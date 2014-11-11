@@ -333,7 +333,7 @@ class WebSocketProtocol13(object):
 
     
     def frame_received(self, opcode, payload):
-        log.msg('Websocket frame ({0}) has been received. Frame data: {1}.'.format(opcode, payload.replace("\n",'')))
+        #log.msg('Websocket frame ({0}) has been received. Frame data: {1}.'.format(opcode, payload.replace("\n",'')))
         if opcode == WS_OPCODE_PING:
             log.msg('Responding with pong packet.')
             self.send_frame(True, WS_OPCODE_PONG, payload)
@@ -420,7 +420,7 @@ class WebSocketDeviceHiveProtocol(Protocol):
             self.factory.closing_connection()
     
     def frame_received(self, payload):
-        log.msg('Websocket message has been received {0}.'.format(payload.replace("\n",'')))
+        #log.msg('Websocket message has been received {0}.'.format(payload.replace("\n",'')))
         message = json.loads(payload)
         if 'requestId' in message :
             request_id = message['requestId']
@@ -471,7 +471,7 @@ class WebSocketDeviceHiveProtocol(Protocol):
             self.msg_callbacks[msg_id] = defer
             # all messages should be in utf-8
             data = json.dumps(message).encode('utf-8')
-            log.msg('Sending websocket text frame. Payload: {0}'.format(data))
+            #log.msg('Sending websocket text frame. Payload: {0}'.format(data))
             self.socket.send_frame(True, WS_OPCODE_TEXT_FRAME, data)
             return defer
         else :
