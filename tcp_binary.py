@@ -208,7 +208,7 @@ class TcpBinaryFactory(ServerFactory):
         #self.packet_buffer = BinaryPacketBuffer()
         #self.protocol = None
         self.gateway = gateway
-        self.protocols = []
+       # self.protocols = []
         self.protocolnum = 0
 
     def buildProtocol(self, addr):
@@ -216,7 +216,7 @@ class TcpBinaryFactory(ServerFactory):
         protocol = TcpBinaryProtocol(self,self.protocolnum)
         protocol.gateway = self.gateway
 
-        self.protocols.append(protocol)
+        #self.protocols.append(protocol)
         self.protocolnum = self.protocolnum+1
 
         return protocol

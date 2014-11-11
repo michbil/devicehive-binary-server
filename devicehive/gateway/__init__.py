@@ -131,9 +131,13 @@ class BaseGateway(object):
 
     def do_command(self, device_id, command, finish_deferred): # this got command second, but when device disconnects, copy do not killed
         print "Send command to all matching devices"
+        i = 0
         for p in self.protocols:
             if p.id == device_id:
                 p.do_command(device_id, command, finish_deferred)
+                i = i + 1
+
+        print str(i)+" protocols found"
 
     
     def run(self, transport_endpoint, device_factory):
