@@ -108,11 +108,13 @@ class BaseGateway(object):
         self.connected = True
         for key in self.devices :
             self.connect_device(self.devices[key])
-    
-    def registration_received(self, info, protocol):
+    def protocol_registered(self,protocol):
+        self.protocols.append(protocol)
+
+    def registration_received(self, info):
         log.msg('Device {0} has sent registration information.'.format(info))
         self.devices[info.id] = info
-        self.protocols.append(protocol)
+
         if self.connected :
             self.connect_device(info)
     

@@ -46,7 +46,7 @@ class BasicBinaryProtocol(Protocol):
                 self.packet_received(packet)
 
     def connectionLost(self, reason):
-        print "Connection closed "
+        print "Connection closed"
         return Protocol.connectionLost(self, reason)
 
     def makeConnection(self, transport):
@@ -94,6 +94,7 @@ class TcpBinaryProtocol(BasicBinaryProtocol):
         print "New protocol connection made"
         pkt = RegistrationRequestPacket()
         self.transport.write(pkt.to_binary())
+        self.gateway.protocol_registered(self)
 
     def connectionLost(self, reason):
         self.gateway.notify_connection_lost(self)
@@ -159,7 +160,7 @@ class TcpBinaryProtocol(BasicBinaryProtocol):
                     out[okey].info = info
         fill_descriptors(reg.commands, self.command_descriptors, info)
         fill_descriptors(reg.notifications, self.notification_descriptors, info)
-        self.gateway.registration_received(info,self)
+        self.gateway.registration_received(info)
 
     def handle_notification_command_result(self, notification):
         """
@@ -205,30 +206,17 @@ class TcpBinaryProtocol(BasicBinaryProtocol):
 class TcpBinaryFactory(ServerFactory):
 
     def __init__(self, gateway):
-        #self.packet_buffer = BinaryPacketBuffer()
-        #self.protocol = None
         self.gateway = gateway
-       # self.protocols = []
         self.protocolnum = 0
 
     def buildProtocol(self, addr):
         log.msg('BinaryFactory.buildProtocol')
         protocol = TcpBinaryProtocol(self,self.protocolnum)
         protocol.gateway = self.gateway
-
-        #self.protocols.append(protocol)
         self.protocolnum = self.protocolnum+1
 
         return protocol
 
-
-
-#    def do_command(self, device_id, command, finish_deferred):
-#        print "Sending command to all connected protocols"
-#        for p in self.protocols:
-#            if p.id == device_id:
-#                p.do_command(device_id,command,finish_deferred)
-#                # send to all connected protocols this command
 
 import time, threading
 
@@ -238,8 +226,8 @@ class Gateway(devicehive.gateway.BaseGateway):
         super(Gateway, self).__init__(url, factory_cls)
         self.timer()
 
-    def registration_received(self, device_info,obj):
-        super(Gateway, self).registration_received(device_info,obj)
+    def registration_received(self, device_info):
+        super(Gateway, self).registration_received(device_info)
 
     def notification_received(self, device_info, notification):
         print "ntf received "+notification.name
