@@ -63,6 +63,7 @@ class BaseGateway(object):
     factory = None
     connected = False
     devices = {}
+    subscribed = {}
     protocols = []
     
     class _ProtoHandler(object):
@@ -100,7 +101,12 @@ class BaseGateway(object):
     def connect_device(self, info):
         def on_subscribe(result) :
             #self.factory.unsubscribe(info.id, info.key)
-            self.factory.subscribe(info.id, info.key)
+            if info.id in self.subscribed:
+                pass
+            else:
+                self.factory.subscribe(info.id, info.key)
+                self.subscribed[info.id] = True
+
         def on_failed(reason) :
             log.err('Failed to save device {0}. Reason: {1}.'.format(info, reason))
         self.factory.device_save(info).addCallbacks(on_subscribe, on_failed)
